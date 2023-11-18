@@ -45,7 +45,8 @@ ADC_HandleTypeDef hadc1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+int UV_Value = 0;
+uint16_t raw = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -53,12 +54,15 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_ADC1_Init(void);
+double mapfloat(double x, double in_min, double in_max, double out_min, double out_max);
 /* USER CODE BEGIN PFP */
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+double mapfloat(double x, double in_min, double in_max, double out_min, double out_max){
+	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 
 /* USER CODE END 0 */
 
@@ -69,6 +73,19 @@ static void MX_ADC1_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+	HAL_ADC_Start(&hadc1);
+	HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+	raw = HAL_ADC_GetValue(&hadc1);
+
+	unsigned int UV_Value = mapfloat(raw, 0, 4095, 1, 12);
+
+	if (UV_Value < 4 && UV_Value >= 0){
+		HAL_GPIO_WritePin(Green_Led_GPIO_Port, Green_Led_Pin, 1);
+	} else if (UV_Value >= 4 && UV_Value <= 9){
+		HAL_GPIO_WritePin(Yellow_Led_GPIO_Port, Yellow_Led_Pin, 1);
+	} else {
+		HAL_GPIO_WritePin(Red_Led_GPIO_Port, Red_Led_Pin, 1);
+	}
 
   /* USER CODE END 1 */
 
@@ -100,30 +117,6 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
-	  //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1);
-	  //HAL_Delay(1000);
-	  //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
-	  //HAL_Delay(1000);
-
-	  HAL_ADC_Start(&hadc1);
-	  HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
-	  uint16_t adc_value_A0 = HAL_ADC_GetValue(&hadc1);
-
-	      // Start ADC conversion for A1
-	  //HAL_ADC_Start(&hadc1);
-	  //HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
-	  //uint16_t adc_value_A1 = HAL_ADC_GetValue(&hadc1);
-
-	      // Process the ADC values as needed
-	      // For example, compare with a threshold and blink the LED accordingly
-	  if (adc_value_A0 < 6){
-	     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1);
-	     HAL_Delay(1000);
-	     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
-	     HAL_Delay(1000);
-	   }
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -280,7 +273,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, LD2_Pin|LED_Green_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -288,12 +281,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LD2_Pin LED_Green_Pin */
-  GPIO_InitStruct.Pin = LD2_Pin|LED_Green_Pin;
+  /*Configure GPIO pin : LED_1_Pin */
+  GPIO_InitStruct.Pin = LED_1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(LED_1_GPIO_Port, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
@@ -314,7 +307,6 @@ void Error_Handler(void)
   __disable_irq();
   while (1)
   {
-
   }
   /* USER CODE END Error_Handler_Debug */
 }
