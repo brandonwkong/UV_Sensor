@@ -75,13 +75,7 @@ int main(void)
 	uint16_t raw = 0;
 	char msg[10];
 
-	//if (UV_Value < 4 && UV_Value >= 0){
-	//	HAL_GPIO_WritePin(Green_Led_GPIO_Port, Green_Led_Pin, 1);
-	//} else if (UV_Value >= 4 && UV_Value <= 9){
-	//	HAL_GPIO_WritePin(Yellow_Led_GPIO_Port, Yellow_Led_Pin, 1);
-	//} else {
-	//	HAL_GPIO_WritePin(Red_Led_GPIO_Port, Red_Led_Pin, 1);
-	//}
+	}
 
   /* USER CODE END 1 */
 
