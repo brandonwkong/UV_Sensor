@@ -113,7 +113,39 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  //TEST 1
+	  HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, 1);
+	  HAL_Delay(1000);
+	  HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, 1);
+
+
+	  // Get ADC value
 	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
+	  HAL_ADC_Start(&hadc1);
+	  HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+	  raw = HAL_ADC_GetValue(&hadc1);
+
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
+	  sprintf(msg, "%hu\r\n", raw);
+	  HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+	  HAL_Delay(20);
+
+	  //TEST 2
+	  // Get ADC value
+	 /* HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
+	  HAL_ADC_Start(&hadc1);
+	  HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+	  raw = HAL_ADC_GetValue(&hadc1);
+
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
+	  raw = mapfloat(raw, 0, 4095, 1, 12);
+	  // Convert to string and print
+	  sprintf(msg, "%hu\r\n", raw);
+	  HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+	  HAL_Delay(20);*/
+
+	  //TEST 3
+	  /*HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
 
 	      // Get ADC value
 	  HAL_ADC_Start(&hadc1);
@@ -133,7 +165,7 @@ int main(void)
 		  HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, 1);
 	  } else {
 		  HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, 0);
-	  }
+	  }*/
 	  //if (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_SET){
 		  //break;
 	  //}
