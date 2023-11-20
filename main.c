@@ -21,7 +21,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <string.h>
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,8 +46,6 @@ ADC_HandleTypeDef hadc1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-int UV_Value = 0;
-uint16_t raw = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -54,7 +53,6 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_ADC1_Init(void);
-double mapfloat(double x, double in_min, double in_max, double out_min, double out_max);
 /* USER CODE BEGIN PFP */
 /* USER CODE END PFP */
 
@@ -73,19 +71,17 @@ double mapfloat(double x, double in_min, double in_max, double out_min, double o
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	HAL_ADC_Start(&hadc1);
-	HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
-	raw = HAL_ADC_GetValue(&hadc1);
+	//int UV_Value = 0;
+	uint16_t raw = 0;
+	char msg[10];
 
-	unsigned int UV_Value = mapfloat(raw, 0, 4095, 1, 12);
-
-	if (UV_Value < 4 && UV_Value >= 0){
-		HAL_GPIO_WritePin(Green_Led_GPIO_Port, Green_Led_Pin, 1);
-	} else if (UV_Value >= 4 && UV_Value <= 9){
-		HAL_GPIO_WritePin(Yellow_Led_GPIO_Port, Yellow_Led_Pin, 1);
-	} else {
-		HAL_GPIO_WritePin(Red_Led_GPIO_Port, Red_Led_Pin, 1);
-	}
+	//if (UV_Value < 4 && UV_Value >= 0){
+	//	HAL_GPIO_WritePin(Green_Led_GPIO_Port, Green_Led_Pin, 1);
+	//} else if (UV_Value >= 4 && UV_Value <= 9){
+	//	HAL_GPIO_WritePin(Yellow_Led_GPIO_Port, Yellow_Led_Pin, 1);
+	//} else {
+	//	HAL_GPIO_WritePin(Red_Led_GPIO_Port, Red_Led_Pin, 1);
+	//}
 
   /* USER CODE END 1 */
 
@@ -117,6 +113,31 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
+
+	      // Get ADC value
+	  HAL_ADC_Start(&hadc1);
+	  HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+	  raw = HAL_ADC_GetValue(&hadc1);
+
+	      // Test: Set GPIO pin low
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
+	  raw = mapfloat(raw, 0, 4095, 1, 12);
+	      // Convert to string and print
+	  sprintf(msg, "%hu\r\n", raw);
+	  HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+
+	      // Pretend we have to do something else for a while
+	  HAL_Delay(20);
+	  if (raw < 4){
+		  HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, 1);
+	  } else {
+		  HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, 0);
+	  }
+	  //if (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_SET){
+		  //break;
+	  //}
+  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -273,7 +294,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, LED_1_Pin|GPIO_PIN_10, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -281,12 +302,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LED_1_Pin */
-  GPIO_InitStruct.Pin = LED_1_Pin;
+  /*Configure GPIO pins : LED_1_Pin PA10 */
+  GPIO_InitStruct.Pin = LED_1_Pin|GPIO_PIN_10;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LED_1_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
